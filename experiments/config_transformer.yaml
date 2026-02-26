@@ -1,0 +1,28 @@
+# Configuration for transformer experiments
+experiments:
+  bert:
+    model_name: "bert-base-uncased"
+    batch_size: 16
+    num_epochs: 3
+    learning_rate: 2e-5
+    max_length: 512
+    warmup_steps: 500
+    weight_decay: 0.01
+  
+  roberta:
+    model_name: "roberta-base"
+    batch_size: 16
+    num_epochs: 3
+    learning_rate: 2e-5
+    max_length: 512
+    warmup_steps: 500
+    weight_decay: 0.01
+  
+  distilbert:
+    model_name: "distilbert-base-uncased"
+    batch_size: 16
+    num_epochs: 3
+    learning_rate: 2e-5
+    max_length: 512
+    warmup_steps: 500
+    weight_decay: 0.01

@@ -1,0 +1,16 @@
+# Configuration for hybrid ensemble experiment
+experiments:
+  hybrid_ensemble:
+    transformer_models:
+      - "bert-base-uncased"
+      - "roberta-base"
+    tfidf:
+      max_features: 5000
+      ngram_range: [1, 2]
+      min_df: 2
+      max_df: 0.95
+    ensemble:
+      model_type: "logistic_regression"
+      C: 1.0
+      max_iter: 1000
+    batch_size: 32

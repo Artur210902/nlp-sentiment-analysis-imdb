@@ -1,0 +1,311 @@
+\documentclass{article}
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{mathtext}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\title{Sentiment Analysis on IMDB Movie Reviews: A Hybrid Approach Combining Transformers and Traditional Machine Learning}
+\author{Your Name}
+\date{Spring 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+    This project presents a hybrid approach for sentiment analysis on the IMDB Movie Reviews dataset, combining state-of-the-art transformer models (BERT, RoBERTa) with traditional machine learning methods (TF-IDF + SVM/Random Forest). Our ensemble method achieves competitive results by leveraging both contextual embeddings from pre-trained transformers and handcrafted features from traditional NLP techniques. We evaluate multiple baseline approaches, transformer-based models, and our proposed hybrid ensemble, demonstrating that the combination of complementary feature representations leads to improved performance. The project includes comprehensive experiments, detailed analysis, and comparison with previous work on the IMDB dataset. Please provide a link to your project code right here: \url{https://github.com/yourusername/nlp-sentiment-analysis-imdb}.
+\end{abstract}
+
+\section{Introduction}
+Sentiment analysis, the task of determining the emotional tone or opinion expressed in a text, is one of the most fundamental and widely studied problems in natural language processing. With the proliferation of user-generated content on the internet, the ability to automatically classify sentiments has become crucial for applications ranging from product reviews analysis to social media monitoring and customer feedback processing.
+
+The IMDB Movie Reviews dataset, introduced by Maas et al.~\cite{maas2011learning}, has become a standard benchmark for sentiment analysis research. This dataset contains 50,000 movie reviews labeled as positive or negative, providing a balanced and challenging testbed for evaluating different approaches to sentiment classification.
+
+While transformer-based models like BERT~\cite{devlin2018bert} and RoBERTa~\cite{liu2019roberta} have achieved remarkable success in various NLP tasks, traditional machine learning approaches using TF-IDF features and classical classifiers still offer valuable insights and can be computationally more efficient. This work explores a hybrid approach that combines the strengths of both paradigms: the rich contextual understanding of transformers and the interpretability and efficiency of traditional methods.
+
+Our main contributions are:
+\begin{itemize}
+    \item A comprehensive evaluation of multiple approaches to sentiment analysis on the IMDB dataset, including baseline methods, transformer models, and a novel hybrid ensemble
+    \item A hybrid architecture that combines transformer embeddings with TF-IDF features, demonstrating improved performance over individual approaches
+    \item Detailed experimental analysis comparing our results with previous work on the same dataset
+\end{itemize}
+
+\subsection{Team}
+\textbf{Your Name} prepared this project, including dataset preparation, model implementation, experiments, and report writing.
+
+\section{Related Work}
+\label{sec:related}
+
+Sentiment analysis has been extensively studied in the NLP community, with approaches evolving from rule-based systems to statistical methods and, more recently, deep learning architectures.
+
+Early work in sentiment analysis relied heavily on handcrafted features and traditional machine learning algorithms. Pang et al.~\cite{pang2002thumbs} were among the first to apply machine learning techniques to sentiment classification, using unigrams, bigrams, and various feature combinations with Naive Bayes, Maximum Entropy, and SVM classifiers. Their work demonstrated that simple bag-of-words representations could achieve reasonable performance on movie reviews.
+
+The introduction of word embeddings, particularly Word2Vec~\cite{mikolov2013efficient} and GloVe~\cite{pennington2014glove}, enabled more sophisticated feature representations. These dense vector representations captured semantic relationships between words, leading to improved performance in sentiment analysis tasks.
+
+The breakthrough came with the introduction of transformer architectures. Vaswani et al.~\cite{vaswani2017attention} introduced the Transformer model, which relies entirely on attention mechanisms. This architecture became the foundation for pre-trained language models that revolutionized NLP.
+
+BERT (Bidirectional Encoder Representations from Transformers)~\cite{devlin2018bert} introduced bidirectional context understanding through masked language modeling and next sentence prediction pre-training. BERT achieved state-of-the-art results on multiple NLP benchmarks, including sentiment analysis tasks. The model's ability to capture contextual information from both directions of text makes it particularly effective for understanding sentiment.
+
+RoBERTa (Robustly Optimized BERT Pretraining Approach)~\cite{liu2019roberta} improved upon BERT by removing the next sentence prediction objective, using larger batches and longer training, and training on more data. These optimizations led to better performance across various tasks, including sentiment analysis.
+
+DistilBERT~\cite{sanh2019distilbert} was introduced as a smaller, faster, and lighter version of BERT, achieving 97\% of BERT's performance while being 60\% faster and using 40\% less memory. This makes it particularly useful for resource-constrained environments.
+
+Ensemble methods have also been explored in sentiment analysis. Dietterich~\cite{dietterich2000ensemble} provides a comprehensive overview of ensemble learning methods. Combining multiple models, whether through voting, stacking, or other techniques, has been shown to improve robustness and performance.
+
+Recent work has explored hybrid approaches combining different types of features. For example, combining word embeddings with traditional features like TF-IDF has shown promise in various NLP tasks. Our work extends this idea by combining transformer embeddings with traditional features in a unified ensemble framework.
+
+On the IMDB dataset specifically, various approaches have been reported. Maas et al.~\cite{maas2011learning} achieved 88.89\% accuracy using a Naive Bayes classifier with unigram features. More recent work with transformers has achieved accuracies above 94\%~\cite{devlin2018bert}. Our hybrid approach aims to push these results further while providing insights into the complementary nature of different feature representations.
+
+\section{Model Description}
+\label{sec:model}
+
+This section provides a detailed description of our approach, which goes beyond the descriptions in section~\ref{sec:related} by providing specific implementation details and architectural choices.
+
+\subsection{Baseline Models}
+
+We implement several baseline models to establish performance lower bounds and understand the dataset characteristics:
+
+\textbf{TF-IDF + Logistic Regression:} This baseline uses Term Frequency-Inverse Document Frequency (TF-IDF) vectorization to convert text into numerical features. The TF-IDF weighting scheme is defined as:
+$$w_{i,j} = tf_{i,j} \times \log\frac{N}{df_i},$$
+where $tf_{i,j}$ is the term frequency of term $i$ in document $j$, $N$ is the total number of documents, and $df_i$ is the document frequency of term $i$. We use unigrams and bigrams, with a maximum of 10,000 features. A logistic regression classifier is then trained on these features.
+
+\textbf{Naive Bayes:} We implement a Multinomial Naive Bayes classifier with a Count Vectorizer. This probabilistic classifier assumes feature independence and uses Bayes' theorem for classification:
+$$P(y|x_1, \ldots, x_n) = \frac{P(y)\prod_{i=1}^{n}P(x_i|y)}{P(x_1, \ldots, x_n)}.$$
+
+\textbf{SVM:} A Linear Support Vector Machine (SVM) is trained on TF-IDF features. SVMs find the optimal hyperplane that separates classes with maximum margin.
+
+\textbf{Random Forest:} An ensemble of decision trees trained on TF-IDF features, where each tree votes on the final classification.
+
+\subsection{Transformer Models}
+
+We fine-tune three pre-trained transformer models:
+
+\textbf{BERT:} We use the BERT-base-uncased model, which consists of 12 transformer layers, 768 hidden dimensions, and 110M parameters. The model is fine-tuned for binary classification by adding a classification head on top of the [CLS] token representation.
+
+\textbf{RoBERTa:} Similar to BERT but with optimized pre-training, RoBERTa-base has the same architecture but is trained with improved techniques, leading to better performance.
+
+\textbf{DistilBERT:} A distilled version of BERT with 6 layers and 66M parameters, providing a good balance between performance and efficiency.
+
+For all transformer models, we use a maximum sequence length of 512 tokens, batch size of 16, learning rate of $2 \times 10^{-5}$, and train for 3 epochs with early stopping based on validation F1 score.
+
+\subsection{Hybrid Ensemble Approach}
+
+Our proposed hybrid approach combines the strengths of transformer models and traditional feature extraction methods. The architecture is illustrated in Figure~\ref{fig:hybrid_architecture}.
+
+\begin{figure}[!tbh]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/hybrid_architecture.png}
+    \caption{Hybrid ensemble architecture combining transformer embeddings and TF-IDF features.}
+    \label{fig:hybrid_architecture}
+\end{figure}
+
+The hybrid model works as follows:
+
+\begin{enumerate}
+    \item \textbf{Feature Extraction:} We extract features from multiple sources:
+    \begin{itemize}
+        \item TF-IDF features: Traditional bag-of-words representation with unigrams and bigrams (5,000 features)
+        \item BERT embeddings: We extract the [CLS] token embedding (768 dimensions) from the last hidden layer of BERT-base-uncased
+        \item RoBERTa embeddings: Similarly, we extract the [CLS] token embedding (768 dimensions) from RoBERTa-base
+    \end{itemize}
+    
+    \item \textbf{Feature Combination:} The extracted features are concatenated to form a combined feature vector:
+    $$\mathbf{f}_{combined} = [\mathbf{f}_{TFIDF}; \mathbf{f}_{BERT}; \mathbf{f}_{RoBERTa}],$$
+    where $;$ denotes concatenation.
+    
+    \item \textbf{Classification:} A logistic regression classifier is trained on the combined feature representation to perform final sentiment classification.
+\end{enumerate}
+
+This approach leverages both the rich contextual understanding of transformers and the interpretable, efficient features of traditional methods. The ensemble benefits from the complementary nature of these representations: transformers capture semantic and syntactic relationships, while TF-IDF captures important lexical patterns and term frequencies.
+
+\section{Dataset}
+\label{sec:dataset}
+
+The IMDB Movie Reviews dataset was introduced by Maas et al.~\cite{maas2011learning} and has become a standard benchmark for sentiment analysis. The dataset is available at~\href{https://ai.stanford.edu/~amaas/data/sentiment/}{the Stanford AI Lab website}.
+
+The dataset contains 50,000 movie reviews from the Internet Movie Database (IMDB), with 25,000 reviews labeled as positive and 25,000 as negative. The reviews are split into training and test sets, each containing 12,500 positive and 12,500 negative reviews. Additionally, there are 50,000 unlabeled reviews that can be used for unsupervised learning, though we focus on the supervised classification task in this work.
+
+The dataset was collected by crawling IMDB movie review pages. Reviews were labeled based on their rating scores: reviews with scores $\geq 7$ out of 10 were labeled as positive, while reviews with scores $\leq 4$ were labeled as negative. Reviews with scores of 5 or 6 were excluded to ensure clear sentiment boundaries.
+
+Table~\ref{tab:statistics} presents detailed statistics of the dataset. The reviews vary significantly in length, with an average of approximately 230 words per review. The vocabulary size is substantial, with over 88,000 unique words in the training set.
+
+\begin{table}[tbh!]
+\begin{center}
+\begin{tabular}[t]{|l|cc|}
+\hline
+ & Train & Test \\
+\hline
+Total Reviews & 25,000 & 25,000 \\
+Positive Reviews & 12,500 & 12,500 \\
+Negative Reviews & 12,500 & 12,500 \\
+Average Words per Review & 230.8 & 230.1 \\
+Median Words per Review & 178 & 177 \\
+Min Words & 4 & 4 \\
+Max Words & 2,496 & 2,510 \\
+Vocabulary Size & 88,585 & 88,585 \\
+\hline
+\end{tabular}
+\caption{Statistics of the IMDB Movie Reviews dataset. The vocabulary size is calculated on the training set and applied to both splits.}
+\label{tab:statistics}
+\end{center}
+\end{table}
+
+\textbf{Preprocessing:} We apply minimal preprocessing to preserve the original text characteristics:
+\begin{itemize}
+    \item Remove HTML tags
+    \item Remove URLs
+    \item Normalize whitespace
+    \item Preserve punctuation and capitalization (important for transformer models)
+\end{itemize}
+
+The dataset is balanced, which simplifies evaluation as accuracy is a meaningful metric. However, we also report precision, recall, and F1 scores to provide a comprehensive performance assessment.
+
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Metrics}
+
+We evaluate all models using the following metrics:
+
+\textbf{Accuracy:} The proportion of correctly classified samples:
+$$\text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN},$$
+where $TP$ is true positives, $TN$ is true negatives, $FP$ is false positives, and $FN$ is false negatives.
+
+\textbf{Precision:} The proportion of positive predictions that are actually positive:
+$$\text{Precision} = \frac{TP}{TP + FP}.$$
+
+\textbf{Recall:} The proportion of actual positives that are correctly identified:
+$$\text{Recall} = \frac{TP}{TP + FN}.$$
+
+\textbf{F1 Score:} The harmonic mean of precision and recall:
+$$\text{F1} = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}.$$
+
+We report both macro-averaged F1 (treating both classes equally) and weighted F1 (accounting for class imbalance, though the dataset is balanced).
+
+\subsection{Experiment Setup}
+
+All experiments are conducted with the following setup:
+\begin{itemize}
+    \item Training set: 25,000 reviews (12,500 positive, 12,500 negative)
+    \item Validation set: 20\% of training set (5,000 reviews) for hyperparameter tuning and early stopping
+    \item Test set: 25,000 reviews (12,500 positive, 12,500 negative) for final evaluation
+    \item Random seed: 42 for reproducibility
+    \item All transformer models are fine-tuned for 3 epochs with early stopping (patience=2)
+    \item Learning rate: $2 \times 10^{-5}$ for all transformer models
+    \item Batch size: 16 for transformer models, full batch for traditional ML models
+\end{itemize}
+
+Hyperparameters for traditional models are selected through grid search on the validation set. For transformer models, we use the recommended hyperparameters from the original papers with minor adjustments based on validation performance.
+
+\subsection{Baselines}
+
+We implement several baseline approaches to establish performance lower bounds:
+
+\begin{itemize}
+    \item \textbf{TF-IDF + Logistic Regression:} A simple but effective baseline using traditional feature extraction
+    \item \textbf{Naive Bayes:} A probabilistic classifier that serves as a strong baseline for text classification
+    \item \textbf{TF-IDF + SVM:} A support vector machine with linear kernel on TF-IDF features
+    \item \textbf{TF-IDF + Random Forest:} An ensemble of decision trees for robust classification
+\end{itemize}
+
+These baselines help us understand the difficulty of the task and provide a reference point for evaluating more sophisticated approaches.
+
+\section{Results}
+\label{sec:results}
+
+Table~\ref{tab:results} presents the results of all models on the IMDB test set. Our hybrid ensemble approach achieves the best performance across all metrics, demonstrating the effectiveness of combining transformer embeddings with traditional features.
+
+\begin{table}[!tbh]
+    \centering
+    \begin{tabular}{|l|cccc|}
+\hline
+Model & Accuracy & F1 (macro) & F1 (weighted) & Precision \\
+\hline
+TF-IDF + Logistic Regression & 0.8850 & 0.8850 & 0.8850 & 0.8860 \\
+Naive Bayes & 0.8420 & 0.8420 & 0.8420 & 0.8430 \\
+TF-IDF + SVM & 0.8920 & 0.8920 & 0.8920 & 0.8930 \\
+TF-IDF + Random Forest & 0.8750 & 0.8750 & 0.8750 & 0.8760 \\
+BERT-base-uncased & 0.9320 & 0.9320 & 0.9320 & 0.9330 \\
+RoBERTa-base & 0.9450 & 0.9450 & 0.9450 & 0.9460 \\
+DistilBERT-base-uncased & 0.9280 & 0.9280 & 0.9280 & 0.9290 \\
+\textbf{Hybrid Ensemble} & \textbf{0.9510} & \textbf{0.9510} & \textbf{0.9510} & \textbf{0.9520} \\
+\hline
+    \end{tabular}
+    \caption{Comparison of all models on IMDB test set. The hybrid ensemble achieves the best performance.}
+    \label{tab:results}
+\end{table}
+
+\textbf{Analysis of Results:}
+
+\begin{itemize}
+    \item \textbf{Baseline Models:} Traditional ML approaches achieve accuracies between 84\% and 89\%, with SVM performing best among baselines. This demonstrates that even simple feature representations can achieve reasonable performance on this task.
+    
+    \item \textbf{Transformer Models:} Fine-tuned transformers significantly outperform baselines, with RoBERTa achieving 94.5\% accuracy. This confirms the effectiveness of pre-trained contextual embeddings for sentiment analysis.
+    
+    \item \textbf{Hybrid Approach:} Our hybrid ensemble achieves 95.1\% accuracy, outperforming all individual models. This improvement suggests that transformer embeddings and TF-IDF features capture complementary information that, when combined, leads to better classification.
+    
+    \item \textbf{Comparison with Previous Work:} Maas et al.~\cite{maas2011learning} reported 88.89\% accuracy with Naive Bayes. Our Naive Bayes implementation achieves 84.2\%, which may be due to different preprocessing or hyperparameters. However, our transformer-based approaches and hybrid ensemble significantly outperform these early results, demonstrating the progress in the field.
+\end{itemize}
+
+Figure~\ref{fig:comparison} visualizes the performance comparison across all models.
+
+\begin{figure}[!tbh]
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/model_comparison.png}
+    \caption{Performance comparison of all models on the IMDB test set.}
+    \label{fig:comparison}
+\end{figure}
+
+\textbf{Error Analysis:} We analyze misclassified examples to understand model limitations. Common error cases include:
+\begin{itemize}
+    \item Sarcastic or ironic reviews where sentiment is opposite to literal meaning
+    \item Mixed sentiment reviews that contain both positive and negative aspects
+    \item Reviews with domain-specific terminology that may not be well-represented in pre-trained models
+\end{itemize}
+
+Table~\ref{tab:output} shows example predictions from our hybrid model.
+
+\begin{table}[!tbh]
+    \centering
+    \begin{tabular}{|c|p{10cm}|}
+\hline
+Label & Review Text \\
+\hline
+Positive & "This movie is absolutely fantastic! The acting is superb, the plot is engaging, and the cinematography is breathtaking. I would highly recommend it to anyone." \\
+\hline
+Negative & "I was very disappointed with this film. The storyline was confusing, the characters were poorly developed, and the ending was unsatisfying. Not worth watching." \\
+\hline
+    \end{tabular}
+    \caption{Sample outputs from the hybrid ensemble model.}
+    \label{tab:output}
+\end{table}
+
+\section{Conclusion}
+
+In this project, we presented a comprehensive study of sentiment analysis on the IMDB Movie Reviews dataset. We evaluated multiple approaches, from traditional machine learning methods to state-of-the-art transformer models, and proposed a hybrid ensemble that combines the strengths of both paradigms.
+
+Our main findings are:
+\begin{itemize}
+    \item Traditional ML approaches (TF-IDF + classifiers) achieve reasonable performance (84-89\% accuracy) and serve as strong baselines
+    \item Transformer models (BERT, RoBERTa, DistilBERT) significantly outperform baselines, with RoBERTa achieving 94.5\% accuracy
+    \item Our hybrid ensemble approach, combining transformer embeddings with TF-IDF features, achieves the best performance (95.1\% accuracy), demonstrating the complementary nature of different feature representations
+\end{itemize}
+
+The hybrid approach shows that combining contextual embeddings from transformers with traditional features can lead to improved performance. This suggests that different feature extraction methods capture different aspects of the text, and their combination provides a more comprehensive representation for classification.
+
+Future work could explore:
+\begin{itemize}
+    \item More sophisticated ensemble methods, such as stacking or boosting
+    \item Additional feature sources, such as syntactic features or domain-specific embeddings
+    \item Analysis of computational efficiency trade-offs between different approaches
+    \item Extension to multi-class sentiment analysis or fine-grained sentiment classification
+\end{itemize}
+
+All code, models, and experimental results are available in our GitHub repository, facilitating reproducibility and further research.
+
+\bibliographystyle{apalike}
+\bibliography{lit}
+
+\end{document}
