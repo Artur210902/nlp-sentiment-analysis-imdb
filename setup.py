@@ -18,7 +18,7 @@ setup(
     description="Sentiment Analysis on IMDB Movie Reviews using Hybrid Approach",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/nlp-sentiment-analysis-imdb",
+    url="https://github.com/Artur210902/nlp-sentiment-analysis-imdb",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",

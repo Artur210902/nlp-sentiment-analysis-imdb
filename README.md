@@ -41,7 +41,7 @@ nlp-sentiment-analysis-imdb/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/nlp-sentiment-analysis-imdb.git
+git clone https://github.com/Artur210902/nlp-sentiment-analysis-imdb.git
 cd nlp-sentiment-analysis-imdb
 ```
 
