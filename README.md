@@ -128,7 +128,7 @@ pdflatex main.tex
 
 ## Team
 
-**Author**: [Your Name]
+**Author**: Strukov Artur
 
 ## License
 
