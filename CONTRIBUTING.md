@@ -42,13 +42,3 @@ Run tests with:
 pytest tests/
 ```
 
-## Report
-
-The LaTeX report is in the `report/` directory. To compile:
-```bash
-cd report
-pdflatex main.tex
-bibtex main
-pdflatex main.tex
-pdflatex main.tex
-```
