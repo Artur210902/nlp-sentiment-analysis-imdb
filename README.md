@@ -114,17 +114,6 @@ Our hybrid approach achieves state-of-the-art results on the IMDB dataset:
 | RoBERTa-base | 0.945 | 0.945 | 0.946 | 0.945 |
 | **Hybrid Ensemble** | **0.951** | **0.951** | **0.952** | **0.951** |
 
-## Report
-
-The full project report is available in the `report/` directory. To compile the LaTeX report:
-
-```bash
-cd report
-pdflatex main.tex
-bibtex main
-pdflatex main.tex
-pdflatex main.tex
-```
 
 ## Team
 
